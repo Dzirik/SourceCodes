@@ -1,0 +1,105 @@
+PCA and SVD
+========================================================
+
+## 04W03L06-07
+
+```{r}
+set.seed(12345)
+par(mar = rep(0.2, 4))
+dataMatrix <- matrix(rnorm(400), nrow = 40)
+image(1:10, 1:40, t(dataMatrix)[, nrow(dataMatrix):1])
+
+par(mar = rep(0.2, 4))
+heatmap(dataMatrix)
+```
+
+adding a pattern
+
+```{r}
+set.seed(678910)
+for (i in 1:40) {
+# flip a coin
+coinFlip <- rbinom(1, size = 1, prob = 0.5)
+# if coin is heads add a common pattern to that row
+if (coinFlip) {
+dataMatrix[i, ] <- dataMatrix[i, ] + rep(c(0, 3), each = 5)
+}
+}
+
+par(mar = rep(0.2, 4))
+image(1:10, 1:40, t(dataMatrix)[, nrow(dataMatrix):1])
+
+par(mar = rep(0.2, 4))
+heatmap(dataMatrix)
+```
+
+##Hraní si se SVD a PCA
+
+1. data
+    ```{r}
+    set.seed(25)
+    X<- cbind(rnorm(10,mean=(rep(c(-1,1),each=5)),sd=0.5),rnorm(10,mean=(rep(c(1,-1),each=5)),sd=0.5))
+    X
+    plot(X[,1],X[,2],col="red",pch=18,cex=2)
+    text(X[,1]+0.05,X[,2]+0.05,labels=as.character(1:12))
+    ```
+
+2. SVD
+
+    ```{r}
+    SVD1<-svd(scale(X))
+    SVD1$u
+    SVD1$d
+    SVD1$v
+    
+    par(mfrow=c(2,2))
+    image(t(X))
+    plot(X[,1],X[,2],col="red",pch=18,cex=2)
+    text(X[,1]+0.05,X[,2]+0.05,labels=as.character(1:12))
+    plot(SVD1$u[,1],1:nrow(X),xlab="Row",ylab="First left singular vector")
+    plot(SVD1$v[,1],1:ncol(X),xlab="Col",ylab="First right singular vector")
+    ```
+    
+    nové souøadnice a rozptyly
+        
+    ```{r}
+    Y<-X%*%SVD1$v
+    par(mfrow=c(2,2))
+    plot(Y[,1],Y[,2],col="red",pch=18,cex=2,main="Nové souøadnice")
+    plot(SVD1$d,xlab="column",ylab="singular value",pch=20)
+    plot(SVD1$d/sum(SVD1$d),xlab="column",ylab="% vysvìtlení",pch=21)
+    plot(SVD1$d^2/sum(SVD1$d^2),xlab="column",ylab="%vysvìtlení na druhou",pch=21)
+    
+    ```
+3. PCA
+    
+    ```{r}
+    pca1<-prcomp(X,scale=TRUE)
+    pca1$sdev
+    pca1$sdev^2
+    pca1$rotation
+    pca1$x
+    pca1$scale
+    
+    par(mfrow=c(2,2))
+    plot(pca1$x,main="nové souøadnice")
+    vlvekt<-pca1$sdev
+    #vlvekt<-pca1$sdev^2
+    plot(pca1$sdev,xlab="column",ylab="singular value",pch=20)
+    plot(pca1$sdev/sum(pca1$sdev),xlab="column",ylab="% vysvìtlení",pch=21)
+    plot(pca1$sdev^2/sum(pca1$sdev^2),xlab="column",ylab="%vysvìtlení na druhou",pch=21)
+    ```
+
+4. problém je porovnat vl èísla:
+
+    ```{r}
+    SVD1$d
+    pca1$sdev
+    print("pomìry")
+    SVD1$d[1]/SVD1$d[2]
+    SVD1$d[1]^2/SVD1$d[2]^2
+    pca1$sdev[1]/pca1$sdev[2]
+    pca1$sdev[1]^2/pca1$sdev[2]^2
+    ```
+    
+5. **ØEŠÍ TAM I MISSING DATA**
